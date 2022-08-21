@@ -1,0 +1,289 @@
+
+*session, flash, cookie ****************************************************
+    -session data is stored in server side 
+      but cookie is stored in client side (browser cookie).
+    - session data is stored by encription but cookie is plain text
+    - session are more secure thant cookie.
+
+    *****
+    - when the user close the browser or logs out the session is destroyed but cookie lifetime can be set by the user.
+    - every time browser send a request to server, cookies are also sent
+      the request.
+    - for each browser rails set a session idenifier in cookie, so that rails can
+      find the correct session information for the request.
+    - without session identifier, rails do not know what session belong to what browser, 
+        so without cookie sessoin will not work.
+
+    *****
+     To identify a user session, rails store a special secure cookie on the user's browser that contains
+        the entire session hash with a uniqe session identifier. 
+        This cookie expires when the browser is closed.
+
+        When the browser make a request to the application, that request automatically include that session 
+        cookie along with other cookies.
+
+    *****
+    Suppose I am using a web application, After login i will be redicted to home page.
+        - I open login page, enter my username and passoword and click login button.
+        - After successfull login server create a session for this browser. At the same time,
+          create an unique identifer for this session such as: ab123
+        - Now server send a cookie request to the browser to set the cookie _demo_session = ab123
+          (Here _demo is the project name may be)
+        - And the page is redirected to home page.
+        (Everything here is happened in a single request )
+        - Now when I open dashboard page in my browser, as browser by default send all the cookies with 
+            every request. So _demo_session = ab123 is also sent with request. So now the application know
+            in which session it should look into by session identifier.
+        -when we logout or close the browser the browser cookie is automatically deleted. As the session 
+            can not work without cookie. The session is also destroyed.
+
+    We know HTTP request are stateless, so how the server/application will know a given request actually
+        came from a particuler user who is logged in.
+        This is why cookie is important. 
+
+    Flash ********
+        - The flash is a special part of the session that helps solve a key problem
+             in the development of web apps.
+        - flash message also stored in session.
+        - flash will last only one more request, but session is last as long as cookie is expired.
+        - so use flush for stuff we need to show the next request.
+        - What makes the flash special is that this message will only be available during the 
+        processing of the next request of the session. Thus, it’s common to have code similar
+         to this for displaying flash messages near the top of the body element of
+          the application.html.erb file:
+        - using flash.now this will not be availabe to next request.
+        
+        By default flash has two types of message: alert and notice.*******************
+        flash[:alert] or flash.alert
+        flash[:notice]    flash.notice // WE can use this flash notice with redirect_to :book_path notice: "ksjefk";
+
+        flash.now[:alert]
+        flash.now[:notice]
+
+        Alert vs Notice*******************************
+        * it really does not matter what we use alert or notice. but we like to think about
+        that alert is error message and notice is confirmation message. 
+
+        ** Add flash type******************************************
+        we can also add our custom flash type from application controller like below:
+             class ApplicationController
+                 add_flash_types :info, :error, :warning
+             end
+
+        ** Render flash message*************************
+        flash message are not shown automatically.
+        we have render them inside our view like in application.html.erb file
+
+        <% flash.each do |type, msg| %>
+             <div>
+                  <%= msg %>
+             </div>
+        <% end %>
+
+    *** You only need to use flash.now if you’re going to render instead
+         of redirecting as render dont sent the request.
+
+
+
+
+ 
+* active recrod validation and migration
+
+
+
+
+
+* render, redirect_to, link_to
+    controller method: render, redirect_to**********************************
+
+    render:***********
+
+    In rails, the action will render a template with the same name as the action itself.
+    In other words, we only need to call render explicitly when the view template
+    we want, doesn't match the action we're rendering it from.
+
+    Rendering from same controller view: **
+    render "edit"
+    render :edit
+    render action: "edit"
+    render acction: :edit 
+        (All are same)
+
+    Rendering from another controller view:**
+    render 'product/show'
+    render template: "product/show"
+
+    Rendering Text: **
+    render :plain 'HI, This is Shishir'
+
+    Rendering JSOn:
+    render :json @products
+
+    redirect_to:*******************
+
+    The redirect_to method tells your browser to send a request to another URL. Since the request is completely different, the view to which you redirect will NOT
+    have access to any variables defined in the controller.
+
+
+    view method: render, link_to  ********************************************
+
+    render is also used within view templates.****************
+     But in view rather than generating a complete HTML document, it's used to insert a partial view template into a larger one. Here's the upshot:
+     <% render 'nav' %>
+     <% render 'shared/nav' %>
+
+     link_to:***************
+     link_to is just a convenience method for inserting anchor tags (a href tags) into our view templates.
+     <% link_to 'About' about_path %>
+
+     *************
+    Render tells Rails which view or asset to show a user,
+    without losing access to any variables defined in the controller action. 
+    Redirect is different.
+    The redirect_to method tells your browser to send a request to another URL.
+
+    ***************
+    There is an important difference between render and redirect_to: render will 
+    tell Rails what view it should use (with the same parameters you may have already sent) but redirect_to sends a new request to the browser.
+
+
+
+
+
+* layout, view, partial*****************************************
+    -find corresponding view/template (from action name) for render
+    -find correct layout file (from controller name)
+    -find yield statement from layout and insert action view/template to to yield
+
+    ** Partial
+    - A partial allows to separate layout code out into 
+      a file which will be reused throughout the layout and/or
+      multiple other layouts.
+        -  Partial must be named with underscore(_) 
+           to make differenciate from other view.
+
+
+
+
+* yield, content_for **********************************************
+        - yield is used in layout for where action view/template will be inserted
+        - content_for is used in view/template for which 
+            yield section (named yield section) of layout will be inserted in yield section of layout.
+        - unnammed yield section, where the full content of view is inserted.
+
+
+
+
+* authentication
+* CRUD = Create, Read, Update, Delete;
+
+
+
+
+***********************************************************************************************************
+* CONTROLLER >>>> parameters, strong paramters, session, flash, cookie, filter, 
+                  the request and response object, authentication.
+***********************************************************************************************************
+  **Rails does not make any distinction between query string parameters and POST parameters, 
+  and both are available in the params hash in our controller.
+
+   strong paramteres:
+    * we dont need strong paramters if we pass paramters one by one. Like -
+       @user = User.new do |u|
+         u.email = params[:user][:email]
+         u.password = params[:user][:password]
+         u.password_confirmation = params[:user][:password_confirmation]
+       end
+
+    * But it is recommended to use strong parameters when inserting whole params hash.
+        @user = User.new(
+          params.require(:user)
+            .permit(:email, :password, :password_confirmation)
+        )
+
+
+  Way - 1 ***************************************************
+  def base_params
+    params.require(:post)
+  end
+  
+  # Don't take IDs from the user for assignment!
+  def update_params
+    base_params.permit(:body, :title)
+  end
+
+  def create_params
+    base_params.permit(:body, :title, :foo, :bar)
+  end
+
+  // Way-2 *******************************************************
+  def create
+    @post = Post.new(post_params(:title, :description))
+    @post.save
+    redirect_to post_path(@post)
+  end
+
+  def update
+    @post = Post.find(params[:id])
+    @post.update(post_params(:title))
+    redirect_to post_path(@post)
+  end
+
+  def post_params(*args)
+    params.require(:post).permit(*args)
+  end
+
+  You can also name them whatever you want. Calling it [resource_name]_params is just a convention.
+
+      ***
+      Since Rails 4+, developers are required to whitelist the parameters
+       that are permitted to be sent to the database from a form.
+
+    References: https://stackoverflow.com/questions/69537500/rails-when-should-i-use-strong-parameters
+
+
+
+    Prevent CSRF attack in Rails ***********************************
+     - The first step to avoid this is to make sure all "destructive" actions (create, update, and destroy) 
+       can only be accessed with non-GET requests
+    - It is recommended to use form helmer method to create form, as it will automatically add authencity_token to the request.
+    - if we use our manual form. we have to manually add authencity_token by method form_authencity_token.
+
+
+    Form Helpers  ***********************************************
+      * rails generate authencity_token while submitting form for every non-get requst.
+      * But in get request it will not be generated.
+
+     <%= form_with url: "/search", method: :get do |form| %>
+       <%= form.label :query, "Search for:" %>
+       <%= form.text_field :query %>
+       <%= form.submit "Search" %>
+     <% end %>
+
+
+Credentials:
+https://www.freshworks.com/eng-blogs/managing-rails-application-secrets-with-encrypted-credentials-blog/ 
+
+
+GEM:
+simple-from, better errors, devise, bycript, bulma-rails
+
+Assignments:
+demo-auth, demo-blog (post and comment)
+event-management
+
+Should Learn:
+asset pipeline, credentials
+
+
+Filter Routes With Command rails routes:***
+------------------------------------------------
+Use findstr instead grep, because cmd doesn't cover grep syntax as it works on Linux.
+rails routes | findstr user
+
+https://medium.com/@sustiono19/simple-authentication-using-devise-in-ruby-on-rails-5dfa3210301f
+https://medium.com/swlh/https-medium-com-melee-santiago-using-devise-gem-to-handle-authentication-in-rails-app-538bbd231dde
+https://levelup.gitconnected.com/devise-authentication-with-rails-5-815b5a9d6daf
+https://levelup.gitconnected.com/how-to-add-authentication-to-rails-web-app-using-devise-a5caedbbc093
+https://betterprogramming.pub/devise-auth-setup-in-rails-7-44240aaed4be
+
